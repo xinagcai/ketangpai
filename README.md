@@ -1,0 +1,2 @@
+# ketangpai
+重庆理工大学课程设计课堂派使用springboot与vue,ktpsys为后端，ktp2为前端，数据字典在ktp2的public/annex目录下
