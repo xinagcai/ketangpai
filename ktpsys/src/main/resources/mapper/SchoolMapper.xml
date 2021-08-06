@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.SchoolMapper">
+    <resultMap id="SchoolMap" type="com.cqut.ktp.pojo.School">
+        <result column="scl_id" property="sclID"/>
+        <result column="scl_name" property="sclName"/>
+    </resultMap>
+
+    <select id="selectSchool" resultMap="SchoolMap">
+        select scl_id, scl_name from ktp.school;
+    </select>
+</mapper>

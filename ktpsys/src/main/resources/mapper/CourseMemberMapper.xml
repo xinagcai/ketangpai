@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.CourseMemberMapper">
+    <resultMap id="CourseUserMap" type="com.cqut.ktp.pojo.User">
+        <result column="u_id" property="userId"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+        <association property="permission" javaType="com.cqut.ktp.pojo.Permission">
+            <result column="pid" property="pid"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="MCourseMap" type="com.cqut.ktp.pojo.Course">
+        <result column="cno" property="cno"/>
+        <result column="cname" property="name"/>
+        <result column="school_year" property="year"/>
+        <result column="semester" property="semester"/>
+        <result column="snum" property="members"/>
+        <result column="archive" property="archiveStatus"/>
+        <association property="admin" javaType="com.cqut.ktp.pojo.User">
+            <result column="admin" property="userId"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="CourseMemberMap" type="com.cqut.ktp.pojo.CourseMember">
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <select id="getCourseMember" resultMap="CourseMemberMap">
+        select status from course_member where member=#{uid} and cno=#{cno}
+    </select>
+
+    <select id="getCourseMembers" resultMap="CourseUserMap">
+        select u_id, name, pid, avatar
+        from user, course_member, permission
+        where course_member.member=user.u_id and user.permission=permission.pid
+        and course_member.cno=#{cno} and status!='2'
+    </select>
+
+    <select id="getCourse" resultMap="MCourseMap">
+        select course.cno, cname, school_year, semester, snum, archive, admin, name
+        from course, user, course_member
+        where course.cno=course_member.cno and course.admin=user.u_id
+        and course_member.member=#{uid} and course.cdelete!=1 and course_member.status=0
+    </select>
+
+    <select id="getMemberCount" resultType="int">
+        select count(*)+1
+        from course_member
+        where cno=#{cno}
+    </select>
+
+    <insert id="addMember">
+        insert into course_member (cno, member, status)
+        values (#{cno}, #{uid}, "0")
+    </insert>
+
+    <update id="updateMember">
+        update course
+        set snum=snum+1
+        where cno=#{cno}
+    </update>
+    <update id="minusMember">
+        update course
+        set snum=snum-1
+        where cno=#{cno}
+    </update>
+
+    <update id="changeStatus">
+        update course_member
+        set status=#{status}
+        where cno=#{cno} and member=#{uid}
+    </update>
+
+    <update id="changeAllStatus">
+        update course_member
+        set status=#{status}
+        where cno=#{cno}
+    </update>
+</mapper>

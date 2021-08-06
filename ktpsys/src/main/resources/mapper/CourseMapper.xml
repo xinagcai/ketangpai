@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.CourseMapper">
+    <resultMap id="CourseMap" type="com.cqut.ktp.pojo.Course">
+        <result column="cno" property="cno"/>
+        <result column="cname" property="name"/>
+        <result column="create_date" property="createDate"/>
+        <result column="school_year" property="year"/>
+        <result column="semester" property="semester"/>
+        <result column="snum" property="members"/>
+        <result column="archive" property="archiveStatus"/>
+        <result column="cdelete" property="deleteStatus"/>
+        <association property="admin" javaType="com.cqut.ktp.pojo.User">
+            <result column="u_id" property="userId"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+    <select id="getCourses" resultMap="CourseMap">
+        select cno, cname, create_date, school_year, semester, snum, archive, cdelete, u_id, name
+        from course, user
+        where course.admin=user.u_id and admin=#{admin} and cdelete!=1
+    </select>
+
+    <select id="getMembers" resultType="int">
+        select snum
+        from course
+        where cno=#{cno}
+    </select>
+
+    <select id="getCourseByCno" resultMap="CourseMap">
+        select cno, cname, create_date, school_year, semester, snum, archive, cdelete, u_id, name
+        from course, user
+        where course.admin=user.u_id and cno=#{cno}
+    </select>
+
+    <insert id="addCourse">
+        insert into course (cno, cname, admin, create_date, school_year, semester, snum, archive, cdelete)
+        values (#{course.cno}, #{course.name}, #{course.admin.userId}, #{course.createDate}, #{course.year},
+        #{course.semester}, #{course.members}, #{course.archiveStatus}, #{course.deleteStatus})
+    </insert>
+
+    <update id="updateCourse">
+        update course
+        <set>
+            <if test="name != '' and name != null">
+                cname=#{name}
+            </if>
+            <if test="num != 0 and num != null">
+                ,snum=#{num}
+            </if>
+            <if test="year != '' and year != null">
+                ,school_year=#{year}
+            </if>
+            <if test="semester != '' and semester != null">
+                ,semester=#{semester}
+            </if>
+            <if test="archive != null">
+                ,archive=#{archive}
+            </if>
+            <if test="cdelete != null">
+                ,cdelete=#{cdelete}
+            </if>
+        </set>
+        where cno=#{cno}
+    </update>
+</mapper>

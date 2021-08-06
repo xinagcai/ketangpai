@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.GradeMapper">
+    <resultMap id="GradeMap" type="com.cqut.ktp.pojo.Grade">
+        <result column="score" property="score"/>
+        <result column="status" property="status"/>
+        <result column="answer" property="answer"/>
+        <association property="user" javaType="com.cqut.ktp.pojo.User">
+            <result column="u_id" property="userId"/>
+            <result column="name" property="name"/>
+            <result column="i_no" property="identifyNo"/>
+        </association>
+        <association property="task" javaType="com.cqut.ktp.pojo.Task">
+            <result column="t" property="tno"/>
+            <result column="cno" property="cno"/>
+            <result column="tname" property="tname"/>
+            <result column="description" property="description"/>
+            <result column="end_date" property="endDate"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="MGradeMap" type="com.cqut.ktp.pojo.Grade">
+        <result column="score" property="score"/>
+        <result column="status" property="status"/>
+        <association property="user" javaType="com.cqut.ktp.pojo.User">
+            <result column="name" property="name"/>
+            <result column="i_no" property="identifyNo"/>
+        </association>
+        <association property="task" javaType="com.cqut.ktp.pojo.Task">
+            <result column="tno" property="tno"/>
+            <result column="tname" property="tname"/>
+        </association>
+    </resultMap>
+
+    <select id="getGradeList" resultMap="GradeMap">
+        select score, status, answer, u_id, name, i_no, grade.tno as t, cno, tname, description, end_date
+        from grade, user, task
+        where grade.tno=task.tno and grade.member=user.u_id
+        and grade.tno=#{tno} and u_id in (SELECT member from course_member where status='0')
+    </select>
+
+    <select id="getScoreList" resultMap="MGradeMap">
+        select score, status, name, i_no, tno, tname
+        from grade, task, user
+        where grade.tno=task.tno and grade.member=user.u_id
+        and grade.member=#{uid}
+        and grade.tno in (select tno from task where cno=#{cno})
+    </select>
+
+    <select id="getGrade" resultMap="GradeMap">
+        select score, status, answer, u_id, name, i_no, grade.tno as t, cno, tname, description, end_date
+        from grade, user, task
+        where grade.tno=task.tno and grade.member=user.u_id
+        and grade.tno=#{tno} and u_id=#{uid}
+    </select>
+
+    <insert id="addGrade">
+        insert into grade (member, tno, status)
+        values (#{uid}, #{tno}, 0)
+    </insert>
+
+    <update id="revise">
+        update grade
+        set score=#{score}, status=1
+        where tno=#{tno} and member=#{uid}
+    </update>
+
+    <update id="reviseMany">
+        update grade
+        set score=#{score}, status=1
+        where tno=#{tno} and member in
+        <foreach item="item" index="index" collection="member" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="submit">
+        update grade
+        set answer=#{answer}
+        where tno=#{tno} and member=#{uid}
+    </update>
+
+    <update id="changeToSubmitStatus">
+        update grade
+        set score=0
+        where tno=#{tno} and member=#{uid}
+    </update>
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.MessageMapper">
+    <resultMap id="MessageMap" type="com.cqut.ktp.pojo.Message">
+        <result column="msg_id" property="msgId"/>
+        <result column="msg" property="msg"/>
+        <result column="status" property="status"/>
+        <association property="from" javaType="com.cqut.ktp.pojo.User">
+            <result column="mfrom_u" property="userId"/>
+            <result column="from_name" property="name"/>
+        </association>
+        <association property="to" javaType="com.cqut.ktp.pojo.User">
+            <result column="mto_u" property="userId"/>
+            <result column="to_name" property="name"/>
+        </association>
+    </resultMap>
+
+    <select id="getNotReadMsgCount" resultType="int">
+        select count(*) from message where to_u=#{to} and status=0
+    </select>
+
+    <select id="getMessages" resultMap="MessageMap">
+        select message.msg_id, f1.from_u as mfrom_u, f1.name as from_name, f2.to_u as mto_u, f2.name as to_name,
+        msg, status
+        from message,
+        (select msg_id, from_u, name from user, message where message.from_u=user.u_id) as f1,
+        (select msg_id, to_u, name from user, message where message.to_u=user.u_id) as f2
+        where message.msg_id=f1.msg_id and message.msg_id=f2.msg_id
+        <if test="to != null and to != ''">
+            and f2.to_u=#{to}
+        </if>
+        <if test="status != null and status != -1">
+            and status=#{status}
+        </if>
+    </select>
+
+    <insert id="send">
+        insert into message (msg_id, from_u, to_u, msg, status)
+        values (#{message.msgId}, #{message.from.userId}, #{message.to.userId}, #{message.msg}, #{message.status})
+    </insert>
+
+    <update id="read">
+        update message
+        set status=1
+        where msg_id in
+        <foreach item="item" index="index" collection="messages" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

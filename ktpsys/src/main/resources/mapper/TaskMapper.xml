@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.TaskMapper">
+    <resultMap id="TaskMap" type="com.cqut.ktp.pojo.Task">
+        <result column="tno" property="tno"/>
+        <result column="cno" property="cno"/>
+        <result column="tname" property="tname"/>
+        <result column="description" property="description"/>
+        <result column="annex" property="annex"/>
+        <result column="avg_score" property="avgScore"/>
+        <result column="pass_rate" property="passRate"/>
+        <result column="highest_score" property="highestScore"/>
+        <result column="lowest_score" property="lowestScore"/>
+        <result column="create_date" property="createDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="submit_num" property="submitNum"/>
+        <result column="judge_num" property="judgeNum"/>
+    </resultMap>
+
+    <resultMap id="TaskCourseMap" type="com.cqut.ktp.pojo.Course">
+        <result column="cno" property="cno"/>
+        <result column="cname" property="name"/>
+        <association property="admin" javaType="com.cqut.ktp.pojo.User">
+            <result column="u_id" property="userId"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+    <select id="selectTasks" resultMap="TaskMap">
+        select *
+        from task
+        where cno=#{cno}
+        <if test="tno != '' and tno != null">
+            and tno=#{tno}
+        </if>
+    </select>
+
+    <select id="selectTaskByTno" resultMap="TaskCourseMap">
+        select course.cno, cname, u_id, name
+        from task, course, user
+        where task.cno=course.cno and course.admin=user.u_id
+        and task.tno=#{tno}
+    </select>
+
+    <insert id="insertTask">
+        insert into task (tno, tname, description, annex, avg_score, pass_rate, highest_score, lowest_score,
+        create_date, end_date, submit_num, judge_num, cno)
+        values (#{task.tno}, #{task.tname}, #{task.description}, #{task.annex}, #{task.avgScore}, #{task.passRate},
+        #{task.highestScore}, #{task.lowestScore}, #{task.createDate}, #{task.endDate}, #{task.submitNum},
+        #{task.judgeNum}, #{task.cno})
+    </insert>
+
+    <delete id="deleteTask">
+        delete from task
+        where tno=#{tno}
+    </delete>
+
+    <update id="updateTask">
+        update task
+        <set>
+            <if test="task.tname != null">
+                tname=#{task.tname}
+            </if>
+            <if test="task.description != null">
+                ,description=#{task.description}
+            </if>
+            <if test="task.annex != null">
+                ,annex=#{task.annex}
+            </if>
+            <if test="task.avgScore != null">
+                ,avg_score=#{task.avgScore}
+            </if>
+            <if test="task.passRate != null">
+                ,pass_rate=#{task.passRate}
+            </if>
+            <if test="task.highestScore != null">
+                ,highest_score=#{task.highestScore}
+            </if>
+            <if test="task.lowestScore != null">
+                ,lowest_score=#{task.lowestScore}
+            </if>
+            <if test="task.endDate != null">
+                ,end_date=#{task.endDate}
+            </if>
+            <if test="task.submitNum != null">
+                ,submit_num=#{task.submitNum}
+            </if>
+            <if test="task.judgeNum != null">
+                ,judge_num=#{task.judgeNum}
+            </if>
+        </set>
+        where tno=#{task.tno}
+    </update>
+
+    <update id="revise">
+        update task
+        set judge_num=judge_num+1
+        where tno=#{tno}
+    </update>
+
+    <update id="submit">
+        update task
+        set submit_num=submit_num+1
+        where tno=#{tno}
+    </update>
+
+</mapper>

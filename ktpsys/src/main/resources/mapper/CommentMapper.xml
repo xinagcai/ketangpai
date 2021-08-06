@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.CommentMapper">
+    <resultMap id="CommentMap" type="com.cqut.ktp.pojo.Comment">
+        <result column="comment" property="comment"/>
+        <result column="cm_date" property="cmDate"/>
+        <association property="task" javaType="com.cqut.ktp.pojo.Task">
+            <result column="t" property="tno"/>
+            <result column="tname" property="tname"/>
+            <result column="description" property="description"/>
+        </association>
+        <association property="user" javaType="com.cqut.ktp.pojo.User">
+            <result column="u_id" property="userId"/>
+            <result column="avatar" property="avatar"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+    <insert id="comment">
+        insert into comment (tno, uid, comment, cm_date)
+        values (#{comment.task.tno}, #{comment.user.userId}, #{comment.comment}, #{comment.cmDate})
+    </insert>
+
+    <select id="getComments" resultMap="CommentMap">
+        select comment.tno as t, u_id, comment, cm_date, tname, description, avatar, name
+        from comment, user, task
+        where comment.uid=user.u_id and comment.tno=task.tno and comment.tno=#{tno}
+    </select>
+</mapper>

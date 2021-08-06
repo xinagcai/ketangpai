@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.ktp.mapper.UserMapper">
+    <resultMap id="UserMap" type="com.cqut.ktp.pojo.User">
+        <result column="account" property="account"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="i_no" property="identifyNo"/>
+        <result column="u_id" property="userId"/>
+        <result column="avatar" property="avatar"/>
+        <association property="permission" javaType="com.cqut.ktp.pojo.Permission">
+            <result property="pid" column="pid"/>
+            <result property="pname" column="pname"/>
+        </association>
+        <association property="school" javaType="com.cqut.ktp.pojo.School">
+            <result property="sclID" column="scl_id"/>
+            <result property="sclName" column="scl_name"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="UserCourseMap" type="com.cqut.ktp.pojo.User">
+        <result column="name" property="name"/>
+        <result column="u_id" property="userId"/>
+        <result column="i_no" property="identifyNo"/>
+        <association property="permission" javaType="com.cqut.ktp.pojo.Permission">
+            <result column="pid" property="pid"/>
+        </association>
+    </resultMap>
+
+    <select id="userVerify" resultMap="UserMap">
+        select account, password, name, i_no, u_id, pid, pname, scl_id, scl_name, avatar
+        from user, permission, school
+        where user.school=school.scl_id and user.permission=permission.pid
+        and account=#{account}
+    </select>
+
+    <select id="findEntityByUid" resultMap="UserMap">
+        select account, password, name, i_no, u_id, pid, pname, scl_id, scl_name, avatar
+        from user, permission, school
+        where user.school=school.scl_id and user.permission=permission.pid
+        and u_id=#{uid}
+    </select>
+
+    <select id="selectStudents" resultMap="UserCourseMap">
+        select name, i_no, u_id, permission as pid
+        from user, course_member
+        where user.u_id=course_member.member and course_member.cno=#{cno}
+        and user.permission=1 and course_member.status=0
+    </select>
+
+    <select id="selectTeacherAss" resultMap="UserCourseMap">
+        select name, i_no, u_id, permission as pid
+        from user, course_member
+        where user.u_id=course_member.member
+        and user.permission=2 and course_member.cno=#{cno} and course_member.status=0
+    </select>
+
+    <select id="selectTeach" resultMap="UserCourseMap">
+        select name, i_no, u_id, permission as pid
+        from user, course
+        where user.u_id=course.admin
+        and course.cno=#{cno}
+    </select>
+
+    <insert id="register">
+        insert into user (account, password, permission, name, school, i_no, u_id)
+        values (#{user.account}, #{user.password}, #{user.permission.pid}, #{user.name}, #{user.school.sclID},
+        #{user.identifyNo}, #{user.userId})
+    </insert>
+
+    <update id="updateUserInfo">
+        update user
+        <set>
+            <if test="password != null and password != ''">
+                password=#{password}
+            </if>
+            <if test="name != null and name != ''">
+                ,name=#{name}
+            </if>
+            <if test="identifyNo != null and identifyNo != ''">
+                ,i_no=#{identifyNo}
+            </if>
+            <if test="school != null and school != 0">
+                ,school=#{school}
+            </if>
+            <if test="permission != null and permission != 0">
+                ,permission=#{permission}
+            </if>
+        </set>
+        where u_id=#{userId}
+    </update>
+</mapper>
